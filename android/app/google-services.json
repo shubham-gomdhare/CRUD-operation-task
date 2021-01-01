@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "901659436274",
+    "project_id": "task-app-sghost",
+    "storage_bucket": "task-app-sghost.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:901659436274:android:fe18e070f1e872a5261c6b",
+        "android_client_info": {
+          "package_name": "com.sghost.flutter_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "901659436274-4aa9m81tinv91ehkb7u2bptf403pcdfr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4LFoibw7YP3yAiRVHi1RV4T90yLGFUdc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "901659436274-4aa9m81tinv91ehkb7u2bptf403pcdfr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
