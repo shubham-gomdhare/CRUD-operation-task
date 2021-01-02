@@ -118,7 +118,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       .width * 0.9,
                   child: RaisedButton.icon(
                     onPressed: () async {
-                      //img = ImagePicker.pickImage(source: ImageSource.gallery);
                       var pickedFile = await img.getImage(
                           source: ImageSource.gallery);
                       setState(() {

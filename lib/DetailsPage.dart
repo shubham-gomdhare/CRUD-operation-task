@@ -1,23 +1,28 @@
-
-
-import 'dart:typed_data';
-
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/DetailsItems.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class DetailsPage extends StatefulWidget {
-
   @override
   _DetailsPage createState() => _DetailsPage();
 }
 
 class _DetailsPage extends State<DetailsPage>{
+
+  var img = ImagePicker();
+  File sel;
+  String text = "No image selected";
+  String url;
+  TextEditingController _name = TextEditingController();
+  TextEditingController _phone = TextEditingController();
+  TextEditingController _address = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    String url;
    return Scaffold(
      appBar: AppBar(
        title: Text("FIRESTORE DATA"),
@@ -35,7 +40,8 @@ class _DetailsPage extends State<DetailsPage>{
            return ListView(
              children:
                snapshot.data.documents.map((doc) {
-                 return  Card(
+                 return GestureDetector(
+                   child: Card(
                      color: Colors.yellow[200],
                      child: Container(
                        width: MediaQuery.of(context).size.width * 0.7,
@@ -44,26 +50,26 @@ class _DetailsPage extends State<DetailsPage>{
                          mainAxisSize: MainAxisSize.max,
                          children: [
                            Container(
-                            child: //Image.network(doc['img']),
-                              FutureBuilder(
-                              future: _getImage(context,doc['img']),
-                              builder: (context, snapshot){
-                                if(snapshot.connectionState == ConnectionState.done){
-                                  return Padding(
-                                    padding: EdgeInsets.all(20),
-                                    child:  Container(
-                                      child: snapshot.data,
-                                    ),
-                                  );
-                                }
-                                if(snapshot.connectionState == ConnectionState.waiting){
-                                  return Container(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                }
-                                return Container();
-                              },
-                            ),
+                             child: //Image.network(doc['img']),
+                             FutureBuilder(
+                               future: _getImage(context,doc['img']),
+                               builder: (context, snapshot){
+                                 if(snapshot.connectionState == ConnectionState.done){
+                                   return Padding(
+                                     padding: EdgeInsets.all(20),
+                                     child:  Container(
+                                       child: snapshot.data,
+                                     ),
+                                   );
+                                 }
+                                 if(snapshot.connectionState == ConnectionState.waiting){
+                                   return Container(
+                                     child: CircularProgressIndicator(),
+                                   );
+                                 }
+                                 return Container();
+                               },
+                             ),
                            ),
                            Container(
                              child: Text("Name: " + doc['name'],style: TextStyle(fontSize: 20),),
@@ -77,6 +83,10 @@ class _DetailsPage extends State<DetailsPage>{
                          ],
                        ),
                      ),
+                   ),
+                   onTap: (){
+                     showAlert(context, doc.id,doc['img']);
+                   },
                  );
                }).toList(),
            );
@@ -93,4 +103,110 @@ class _DetailsPage extends State<DetailsPage>{
     return m;
   }
 
-}
+  Future _delete(id,imgUrl) async{
+    await Firestore.instance.collection('Details').doc(id).delete().whenComplete(() {
+      FirebaseStorage.instance.refFromURL(imgUrl).delete();
+    });
+  }
+  showAlert(BuildContext context,id,imgUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('MENU'),
+          content: Text("UPDATE or DELETE?"),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("UPDATE"),
+              onPressed: () {
+                _openPopup(context,id);
+              },
+            ),
+
+            FlatButton(
+              child: Text("DELETE"),
+              onPressed: () {
+                _delete(id, imgUrl);
+                Navigator.of(context).pop();
+              },
+            ),
+
+            FlatButton(
+              child: Text("CANCEL"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  _openPopup(context,id) {
+    Alert(
+        context: context,
+        title: "UPDATE DETAILS",
+        content: Column(
+          children: <Widget>[
+            TextField(
+              controller: _name,
+              decoration: InputDecoration(
+                icon: Icon(Icons.account_circle),
+                labelText: 'Name',
+              ),
+            ),
+            TextField(
+              controller: _phone,
+              decoration: InputDecoration(
+                icon: Icon(Icons.phone_android_outlined),
+                labelText: 'Phone',
+              ),
+            ),
+            TextField(
+              controller: _address,
+              decoration: InputDecoration(
+                icon: Icon(Icons.directions),
+                labelText: 'Address',
+              ),
+            ),
+            RaisedButton.icon(
+              onPressed: () async {
+                var pickedFile = await img.getImage(
+                    source: ImageSource.gallery);
+                setState(() {
+                  if (pickedFile != null) {
+                    sel = File(pickedFile.path);
+                    text = sel.path;
+                  }
+                });
+              },
+              icon: Icon(Icons.image),
+              label: Text("Pick Image"),
+            ),
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            onPressed: () {
+              String filePath = DateTime.now().millisecondsSinceEpoch.toString();
+              Reference storageReference =
+              FirebaseStorage.instance.ref().child('/images').child(filePath);
+              storageReference.putFile(sel).whenComplete(() async {
+                url = await storageReference.getDownloadURL();
+                await Firestore.instance.collection('Details').doc(id).update({
+                  'img': url,
+                  'name': _name.text,
+                  'phone': _phone.text,
+                  'address':_address.text,
+                });
+              });
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              "UPDATE",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+          )
+        ]).show();
+  }
+  }
