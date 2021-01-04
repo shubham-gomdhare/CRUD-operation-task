@@ -1,8 +1,8 @@
 
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/DetailsPage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -22,10 +22,14 @@ class _MyHomePageState extends State<MyHomePage> {
   String url;
   bool _validateName = false;
   bool _validatePhone = false;
-  bool _validateAddress = false;
+  bool _validateEmail = false;
   TextEditingController _name = TextEditingController();
   TextEditingController _phone = TextEditingController();
-  TextEditingController _address = TextEditingController();
+  TextEditingController _mail = TextEditingController();
+  DateTime dateTime = DateTime.now();
+  String d = DateTime.now().day.toString();
+  String m = DateTime.now().month.toString();
+  String y = DateTime.now().year.toString();
 
 
   @override
@@ -95,11 +99,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       .size
                       .width * 0.9,
                   child: TextField(
-                    controller: _address,
+                    controller: _mail,
                     style: TextStyle(fontSize: 18),
                     decoration: InputDecoration(
-                        hintText: 'ADDRESS',
-                        errorText: _validateAddress ? 'Value Can\'t Be Empty' : null,
+                        hintText: 'E-mail ID',
+                        errorText: _validateEmail ? 'Value Can\'t Be Empty' : null,
                         contentPadding: EdgeInsets.only(
                             top: 0, right: 0, left: 10, bottom: 0),
                         border: OutlineInputBorder(
@@ -107,6 +111,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         )),
                   ),
                 ),
+                SizedBox(
+                  height: 20,
+                ),
+                Text(dateTime.toString(),style: TextStyle(fontSize: 18,color: Colors.blueGrey),),
                 SizedBox(
                   height: 20,
                 ),
@@ -140,7 +148,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 RaisedButton.icon(
                   onPressed: () {
-                    uploadImageToFirebase(sel,_name.text,_phone.text,_address.text);
+                    String date = '$d-$m-$y';
+                    uploadImageToFirebase(sel,_name.text,_phone.text,_mail.text,date);
                     print(url);
                     text = "No image selected";
                   },
@@ -164,10 +173,10 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future uploadImageToFirebase(file,String name, String phone, String address) async {
+  Future uploadImageToFirebase(file,String name, String phone, String mail,String date) async {
     _name.text.isEmpty ? _validateName = true : _validateName = false;
     _phone.text.isEmpty ? _validatePhone = true : _validatePhone = false;
-    _address.text.isEmpty ? _validateAddress = true : _validateAddress = false;
+    _mail.text.isEmpty ? _validateEmail = true : _validateEmail = false;
       String filePath = DateTime.now().millisecondsSinceEpoch.toString();
       Reference storageReference =
       FirebaseStorage.instance.ref().child('/images').child(filePath);
@@ -177,12 +186,13 @@ class _MyHomePageState extends State<MyHomePage> {
           'img': url,
           'name': name,
           'phone': phone,
-          'address':address,
+          'mail':mail,
+          'date': date,
         });
       });
       _name.clear();
       _phone.clear();
-      _address.clear();
+      _mail.clear();
       sel = null;
       url= null;
   }

@@ -19,8 +19,11 @@ class _DetailsPage extends State<DetailsPage>{
   String url;
   TextEditingController _name = TextEditingController();
   TextEditingController _phone = TextEditingController();
-  TextEditingController _address = TextEditingController();
-
+  TextEditingController _mail = TextEditingController();
+  String dateTime = DateTime.now().toString();
+  String d = DateTime.now().day.toString();
+  String m = DateTime.now().month.toString();
+  String y = DateTime.now().year.toString();
   @override
   Widget build(BuildContext context) {
    return Scaffold(
@@ -78,7 +81,10 @@ class _DetailsPage extends State<DetailsPage>{
                              child: Text("Phone: " + doc['phone'],style: TextStyle(fontSize: 20),),
                            ),
                            Container(
-                             child: Text("Address: " + doc['address'],style: TextStyle(fontSize: 20),),
+                             child: Text("mail: " + doc['mail'],style: TextStyle(fontSize: 20),),
+                           ),
+                           Container(
+                             child: Text("date: " + doc['date'],style: TextStyle(fontSize: 20),),
                            ),
                          ],
                        ),
@@ -163,10 +169,10 @@ class _DetailsPage extends State<DetailsPage>{
               ),
             ),
             TextField(
-              controller: _address,
+              controller: _mail,
               decoration: InputDecoration(
                 icon: Icon(Icons.directions),
-                labelText: 'Address',
+                labelText: 'Email ID',
               ),
             ),
             RaisedButton.icon(
@@ -188,6 +194,7 @@ class _DetailsPage extends State<DetailsPage>{
         buttons: [
           DialogButton(
             onPressed: () {
+              String date = '$d-$m-$y';
               String filePath = DateTime.now().millisecondsSinceEpoch.toString();
               Reference storageReference =
               FirebaseStorage.instance.ref().child('/images').child(filePath);
@@ -197,7 +204,8 @@ class _DetailsPage extends State<DetailsPage>{
                   'img': url,
                   'name': _name.text,
                   'phone': _phone.text,
-                  'address':_address.text,
+                  'address':_mail.text,
+                  'date': date,
                 });
               });
               Navigator.of(context).pop();
